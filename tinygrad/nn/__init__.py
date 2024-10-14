@@ -1,6 +1,7 @@
 from __future__ import annotations
 import math
 from typing import Optional, Union, Tuple, List
+from tinygrad.dtype import dtypes
 from tinygrad.tensor import Tensor
 from tinygrad.helpers import prod, make_pair
 from tinygrad.nn import optim, state, datasets  # noqa: F401
@@ -54,8 +55,8 @@ class BatchNorm:
     batch_mean, batch_var = self.calc_stats(x)
     # NOTE: wow, this is done all throughout training in most PyTorch models
     if self.track_running_stats and Tensor.training:
-      self.running_mean.assign((1-self.momentum) * self.running_mean + self.momentum * batch_mean.detach())
-      self.running_var.assign((1-self.momentum) * self.running_var + self.momentum * prod(x.shape)/(prod(x.shape)-x.shape[1]) * batch_var.detach())
+      self.running_mean.assign((1-self.momentum) * self.running_mean + self.momentum * batch_mean.detach().cast(dtypes.float))
+      self.running_var.assign((1-self.momentum) * self.running_var + self.momentum * prod(x.shape)/(prod(x.shape)-x.shape[1]) * batch_var.detach().cast(dtypes.float))
       self.num_batches_tracked += 1
     return x.batchnorm(self.weight, self.bias, batch_mean, batch_var.add(self.eps).rsqrt())
 BatchNorm2d = BatchNorm3d = BatchNorm
